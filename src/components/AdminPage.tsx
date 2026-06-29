@@ -49,6 +49,19 @@ const toFormValues = (product: Product, categoryId: number): ProductFormValues =
 
 const fieldClass = 'w-full rounded-2xl border border-[#d6e0d2] bg-white px-4 py-3 outline-none focus:border-[#8da588]'
 
+const getErrorMessage = (error: unknown, fallback: string) => {
+	if (error instanceof Error) return error.message
+	if (error && typeof error === 'object') {
+		const values = ['message', 'error_description', 'details', 'hint', 'code']
+			.map((key) => (error as Record<string, unknown>)[key])
+			.filter((value): value is string => typeof value === 'string' && value.length > 0)
+
+		if (values.length > 0) return values.join(' ')
+	}
+
+	return fallback
+}
+
 const AdminPage = () => {
 	const [session, setSession] = useState<Session | null>(null)
 	const [email, setEmail] = useState('')
@@ -88,7 +101,7 @@ const AdminPage = () => {
 			setProducts(nextProducts)
 			setCategories(nextCategories)
 		} catch (error) {
-			setMessage(error instanceof Error ? error.message : 'Не вдалося завантажити дані.')
+			setMessage(getErrorMessage(error, 'Не вдалося завантажити дані.'))
 		} finally {
 			setIsLoading(false)
 		}
@@ -102,7 +115,7 @@ const AdminPage = () => {
 		setMessage('')
 		const { error } = await supabase.auth.signInWithPassword({ email, password })
 		setIsLoading(false)
-		if (error) setMessage(error.message)
+		if (error) setMessage(getErrorMessage(error, 'Не вдалося увійти.'))
 	}
 
 	const handleLogout = async () => {
@@ -133,7 +146,7 @@ const AdminPage = () => {
 			resetForm()
 			await loadData()
 		} catch (error) {
-			setMessage(error instanceof Error ? error.message : 'Не вдалося зберегти товар.')
+			setMessage(getErrorMessage(error, 'Не вдалося зберегти товар.'))
 		} finally {
 			setIsLoading(false)
 		}
@@ -150,7 +163,7 @@ const AdminPage = () => {
 			setMessage('Товар видалено.')
 			await loadData()
 		} catch (error) {
-			setMessage(error instanceof Error ? error.message : 'Не вдалося видалити товар.')
+			setMessage(getErrorMessage(error, 'Не вдалося видалити товар.'))
 		} finally {
 			setIsLoading(false)
 		}
@@ -168,7 +181,7 @@ const AdminPage = () => {
 			setMessage('Категорію додано.')
 			await loadData()
 		} catch (error) {
-			setMessage(error instanceof Error ? error.message : 'Не вдалося додати категорію.')
+			setMessage(getErrorMessage(error, 'Не вдалося додати категорію.'))
 		} finally {
 			setIsLoading(false)
 		}

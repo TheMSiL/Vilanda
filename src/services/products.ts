@@ -11,6 +11,7 @@ type ProductRow = {
 	badge: string | null
 	badge_class: string | null
 	image: string
+	images?: string[] | null
 	description: string
 	light: Product['light']
 	container: string | null
@@ -32,7 +33,7 @@ export type ProductFormValues = {
 	price: number
 	badge: string
 	badgeClass: string
-	image: string
+	images: string[]
 	description: string
 	light: Product['light']
 	container: string
@@ -51,6 +52,7 @@ const toProduct = (row: ProductRow): Product => ({
 	badge: row.badge ?? undefined,
 	badgeClass: row.badge_class ?? undefined,
 	image: row.image,
+	images: row.images?.length ? row.images : [row.image],
 	description: row.description,
 	light: row.light,
 	container: row.container ?? undefined,
@@ -116,6 +118,10 @@ export const fetchCategories = async (): Promise<Category[]> => {
 
 export const saveProduct = async (values: ProductFormValues, productId?: number) => {
 	if (!supabase) throw new Error('Supabase is not configured.')
+	const imageUrls = values.images.map((image) => image.trim()).filter(Boolean)
+	const primaryImage = imageUrls[0]
+
+	if (!primaryImage) throw new Error('Додайте хоча б одне фото товару.')
 
 	const payload = {
 		name: values.name,
@@ -123,7 +129,8 @@ export const saveProduct = async (values: ProductFormValues, productId?: number)
 		price: values.price,
 		badge: values.badge || null,
 		badge_class: values.badgeClass || null,
-		image_url: values.image,
+		image_url: primaryImage,
+		image_urls: imageUrls,
 		description: values.description,
 		light: values.light,
 		container: values.container,

@@ -7,6 +7,7 @@ export type Product = {
 	badge?: string
 	badgeClass?: string
 	image: string
+	images?: string[]
 	description: string
 	light: 'Сонце' | 'Напівтінь' | 'Тінь'
 	container?: string

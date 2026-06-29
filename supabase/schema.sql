@@ -13,6 +13,7 @@ create table if not exists public.products (
 	badge text,
 	badge_class text,
 	image_url text not null,
+	image_urls text[] not null default '{}',
 	description text not null,
 	light text not null check (light in ('Сонце', 'Напівтінь', 'Тінь')),
 	container text not null default 'C3-C5',
@@ -69,6 +70,10 @@ select
 	p.badge,
 	p.badge_class,
 	p.image_url as image,
+	case
+		when cardinality(p.image_urls) > 0 then p.image_urls
+		else array[p.image_url]
+	end as images,
 	p.description,
 	p.light,
 	p.container,

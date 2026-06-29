@@ -21,7 +21,7 @@ const emptyForm = (categoryId = 0): ProductFormValues => ({
 	price: 0,
 	badge: '',
 	badgeClass: 'bg-[#dcebd7] text-[#244f22]',
-	image: '',
+	images: ['', '', ''],
 	description: '',
 	light: 'Сонце',
 	container: 'C3-C5',
@@ -37,7 +37,7 @@ const toFormValues = (product: Product, categoryId: number): ProductFormValues =
 	price: product.price,
 	badge: product.badge ?? '',
 	badgeClass: product.badgeClass ?? '',
-	image: product.image,
+	images: [...(product.images?.length ? product.images : [product.image]), '', ''].slice(0, 3),
 	description: product.description,
 	light: product.light,
 	container: product.container ?? 'C3-C5',
@@ -253,7 +253,22 @@ const AdminPage = () => {
 									{categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
 								</select>
 								<input value={form.price} onChange={(event) => setForm({ ...form, price: Number(event.target.value) })} required type='number' min='0' placeholder='Ціна' className={fieldClass} />
-								<input value={form.image} onChange={(event) => setForm({ ...form, image: event.target.value })} required placeholder='URL фото' className={fieldClass} />
+								<div className='space-y-2'>
+									{form.images.map((image, index) => (
+										<input
+											key={index}
+											value={image}
+											onChange={(event) => {
+												const images = [...form.images]
+												images[index] = event.target.value
+												setForm({ ...form, images })
+											}}
+											required={index === 0}
+											placeholder={index === 0 ? 'Головне фото URL' : `Додаткове фото ${index + 1} URL`}
+											className={fieldClass}
+										/>
+									))}
+								</div>
 								<textarea value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} required rows={3} placeholder='Опис' className={fieldClass} />
 								<div className='grid gap-3 sm:grid-cols-2'>
 									<select value={form.light} onChange={(event) => setForm({ ...form, light: event.target.value as Product['light'] })} className={fieldClass}>

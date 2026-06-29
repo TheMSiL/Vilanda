@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import logo from '../assets/logo.png'
 import { useShop } from '../context/ShopContext'
@@ -17,6 +17,11 @@ const ProductPage = ({ productId }: { productId: number }) => {
 	const product = products.find((item) => item.id === productId)
 	const { cart, favorites, cartCount, changeQuantity, toggleFavorite } = useShop()
 	const [quantity, setQuantity] = useState(1)
+	const [activeImageIndex, setActiveImageIndex] = useState(0)
+
+	useEffect(() => {
+		setActiveImageIndex(0)
+	}, [productId])
 
 	if (isLoading && !product) {
 		return (
@@ -39,6 +44,8 @@ const ProductPage = ({ productId }: { productId: number }) => {
 
 	const isFavorite = favorites.includes(product.id)
 	const inCart = cart[product.id] ?? 0
+	const productImages = product.images?.length ? product.images : [product.image]
+	const activeImage = productImages[activeImageIndex] ?? productImages[0] ?? product.image
 	const relatedProducts = products
 		.filter((item) => item.id !== product.id && item.category === product.category)
 		.concat(products.filter((item) => item.id !== product.id && item.category !== product.category))
@@ -82,19 +89,38 @@ const ProductPage = ({ productId }: { productId: number }) => {
 						</nav>
 
 						<div className='grid gap-8 lg:grid-cols-[1.05fr_0.95fr] xl:gap-14'>
-							<div className='relative min-h-[480px] overflow-hidden rounded-[32px] bg-[#e4ebe1] lg:min-h-[680px]'>
-								<img src={product.image} alt={product.name} className='absolute inset-0 h-full w-full object-cover' />
-								{product.badge && <span className={`absolute left-5 top-5 rounded-full px-4 py-2 text-sm font-semibold ${product.badgeClass}`}>{product.badge}</span>}
-								<button
-									type='button'
-									onClick={() => toggleFavorite(product.id)}
-									aria-label={isFavorite ? 'Прибрати з обраного' : 'Додати в обране'}
-									className={`absolute right-5 top-5 flex h-12 w-12 items-center justify-center rounded-full shadow-sm transition ${
-										isFavorite ? 'bg-[#fff3ad]' : 'bg-white/90 hover:bg-white'
-									}`}
-								>
-									<HeartIcon filled={isFavorite} />
-								</button>
+							<div>
+								<div className='relative min-h-[480px] overflow-hidden rounded-[32px] bg-[#e4ebe1] lg:min-h-[680px]'>
+									<img src={activeImage} alt={product.name} className='absolute inset-0 h-full w-full object-cover' />
+									{product.badge && <span className={`absolute left-5 top-5 rounded-full px-4 py-2 text-sm font-semibold ${product.badgeClass}`}>{product.badge}</span>}
+									<button
+										type='button'
+										onClick={() => toggleFavorite(product.id)}
+										aria-label={isFavorite ? 'Прибрати з обраного' : 'Додати в обране'}
+										className={`absolute right-5 top-5 flex h-12 w-12 items-center justify-center rounded-full shadow-sm transition ${
+											isFavorite ? 'bg-[#fff3ad]' : 'bg-white/90 hover:bg-white'
+										}`}
+									>
+										<HeartIcon filled={isFavorite} />
+									</button>
+								</div>
+								{productImages.length > 1 && (
+									<div className='mt-4 grid grid-cols-3 gap-3'>
+										{productImages.slice(0, 3).map((image, index) => (
+											<button
+												key={image}
+												type='button'
+												onClick={() => setActiveImageIndex(index)}
+												aria-label={`Показати фото ${index + 1}`}
+												className={`h-28 overflow-hidden rounded-[20px] border-2 bg-[#e4ebe1] transition ${
+													activeImageIndex === index ? 'border-[#173d19]' : 'border-transparent hover:border-[#8da588]'
+												}`}
+											>
+												<img src={image} alt='' className='h-full w-full object-cover' />
+											</button>
+										))}
+									</div>
+								)}
 							</div>
 
 							<div className='flex flex-col lg:py-4'>

@@ -5,7 +5,9 @@ update public.products
 set image_urls = array[image_url]
 where cardinality(image_urls) = 0;
 
-create or replace view public.catalog_products
+drop view if exists public.catalog_products;
+
+create view public.catalog_products
 with (security_invoker = true) as
 select
 	p.id,
@@ -31,6 +33,8 @@ select
 	p.updated_at
 from public.products p
 join public.categories c on c.id = p.category_id;
+
+grant select on public.catalog_products to anon, authenticated;
 
 insert into storage.buckets (id, name, public)
 values ('product-images', 'product-images', true)
